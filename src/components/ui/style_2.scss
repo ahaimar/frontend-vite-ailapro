@@ -1,0 +1,220 @@
+// ─────────────────────────────────────────────
+// FAB — Floating Action Button
+// Aesthetic: Dark luxury / warm-gold bloom
+// ─────────────────────────────────────────────
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap');
+
+// ── Tokens ────────────────────────────────────
+:root {
+  --fab-surface:      #1a1714;
+  --fab-surface-2:    #252018;
+  --fab-border:       rgba(255, 220, 140, 0.15);
+  --fab-gold:         #e8c87a;
+  --fab-gold-light:   #f5dfa0;
+  --fab-gold-glow:    rgba(232, 200, 122, 0.35);
+  --fab-text:         #f0e8d6;
+  --fab-shadow:       0 8px 32px rgba(0, 0, 0, 0.55);
+  --fab-radius:       50%;
+  --fab-size:         56px;
+  --fab-gap:          14px;
+  --fab-duration:     0.42s;
+  --fab-ease:         cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+// ── Layout container ──────────────────────────
+.fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--fab-gap);
+  z-index: 1000;
+
+  // Hide secondary actions by default
+  > button:not(.fab__trigger):not(.fab__main-action) {
+    opacity: 0;
+    transform: translateY(12px) scale(0.8);
+    pointer-events: none;
+    transition:
+            opacity    var(--fab-duration) var(--fab-ease),
+            transform  var(--fab-duration) var(--fab-ease);
+  }
+
+  // When open
+  &.is-open {
+    > button:not(.fab__trigger):not(.fab__main-action) {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+
+      // Stagger the bloom
+      @for $i from 1 through 5 {
+        &:nth-of-type(#{$i}) {
+          transition-delay: #{($i - 1) * 0.055}s;
+        }
+      }
+    }
+
+    .fab__trigger {
+      opacity: 0;
+      transform: scale(0.7) rotate(45deg);
+      pointer-events: none;
+    }
+
+    .fab__main-action {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+      pointer-events: auto;
+      box-shadow:
+              0 0 0 1px var(--fab-gold),
+              0 0 24px var(--fab-gold-glow),
+              var(--fab-shadow);
+    }
+  }
+}
+
+// ── Base button ───────────────────────────────
+.fab__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--fab-size);
+  height: var(--fab-size);
+  border-radius: var(--fab-radius);
+  border: 1px solid var(--fab-border);
+  background: var(--fab-surface-2);
+  color: var(--fab-text);
+  cursor: pointer;
+  box-shadow: var(--fab-shadow);
+  outline: none;
+  transition:
+          background  0.2s ease,
+          border-color 0.2s ease,
+          box-shadow  0.2s ease,
+          transform   0.15s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+  }
+
+  &:hover {
+    background: #2e2820;
+    border-color: rgba(232, 200, 122, 0.4);
+    box-shadow:
+            0 0 0 1px rgba(232, 200, 122, 0.2),
+            var(--fab-shadow);
+    color: var(--fab-gold-light);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.95);
+  }
+
+  &:focus-visible {
+    box-shadow:
+            0 0 0 2px var(--fab-gold),
+            var(--fab-shadow);
+  }
+}
+
+// ── Trigger (the + icon, collapses when open) ─
+.fab__trigger {
+  @extend .fab__btn;
+  // Sits behind the main action visually
+  position: absolute;
+  bottom: 0;
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  transition:
+          opacity    0.25s ease,
+          transform  0.25s ease;
+}
+
+// ── Main action (primary, swaps in when open) ─
+.fab__main-action {
+  @extend .fab__btn;
+  position: absolute;
+  bottom: 0;
+  background: linear-gradient(135deg, #c9a84c, #e8c87a);
+  color: #1a1714;
+  border-color: transparent;
+  opacity: 0;
+  transform: scale(0.7) rotate(-45deg);
+  pointer-events: none;
+  transition:
+          opacity    var(--fab-duration) var(--fab-ease),
+          transform  var(--fab-duration) var(--fab-ease),
+          box-shadow 0.2s ease;
+
+  svg {
+    color: #1a1714;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #d4b05e, #f0d48a);
+    color: #1a1714;
+    transform: translateY(-2px) scale(1.04) !important;
+  }
+}
+
+// ── Wrapper so trigger + main-action overlap ──
+.fab__toggle-wrap {
+  position: relative;
+  width: var(--fab-size);
+  height: var(--fab-size);
+  flex-shrink: 0;
+}
+
+// ── Tooltip labels ────────────────────────────
+.fab__btn[aria-label],
+.fab__trigger[aria-label] {
+  &::before {
+    content: attr(aria-label);
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--fab-gold);
+    background: var(--fab-surface);
+    border: 1px solid var(--fab-border);
+    padding: 4px 10px;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+// ── Subtle backdrop when open ──────────────────
+.fab__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 6, 0.4);
+  backdrop-filter: blur(1px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+
+  .fab.is-open ~ & {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
